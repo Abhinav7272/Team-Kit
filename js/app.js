@@ -341,7 +341,6 @@
           cell(team.team, "team-cell"),
           cell(team.captain, "", "Captain"),
           cell(swatchEl(teamColorId(team)), "", "Team color"),
-          cell(formatTime(team.updatedAt), "muted-cell", "Updated"),
           cell(actions, "actions-cell")
         );
         return tr;
