@@ -1,11 +1,11 @@
 # Prime Play
 
-Single-page site where team captains pick dress code colours from a 32-shade wheel, save their team and captain name, and see every team's selection in a shared table. Each saved team can be previewed in a popup, edited, or deleted — but only within 60 minutes of saving. After that the colour is closed.
+Single-page site where team captains pick dress code colours from a 32-shade wheel, save their team and captain name, and see every team's selection in a shared table. Each saved team can be previewed in a popup, edited, or deleted — but only within the 60-minute edit window. After that, nothing can be deleted or changed.
 
 ## Selection Rules
 
 - Each team must select one colour from the 32 options.
-- You can change or delete a colour for 60 minutes only. After that it is closed.
+- Edit window is open for 60 minutes. After that, it will get closed and nothing can be deleted or changed.
 
 ## Deploy on Vercel
 
