@@ -61,10 +61,6 @@ input {
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 24px 28px;
-  display: grid;
-  grid-template-columns: 1fr minmax(280px, 400px);
-  gap: 24px 48px;
-  align-items: center;
 }
 
 .hero h1 {
@@ -85,20 +81,9 @@ input {
   color: var(--muted);
 }
 
-.hero-shade {
-  display: grid;
-  justify-items: stretch;
-  gap: 12px;
-  margin: 0;
-}
-
-.hero-shade .wheel-wrap {
+.builder-form .wheel-wrap {
   width: min(240px, 100%);
   margin: 0 auto;
-}
-
-.hero-shade .form-actions {
-  justify-content: center;
 }
 
 /* ---------- Layout ---------- */
@@ -609,13 +594,7 @@ input {
 
 /* ---------- Tablet ---------- */
 @media (max-width: 960px) {
-  .hero {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    padding-top: 28px;
-  }
-
-  .hero-shade .wheel-wrap { width: min(260px, 80vw); }
+  .hero { padding-top: 28px; }
 
   .builder-grid { grid-template-columns: 1fr; gap: 28px; }
 
