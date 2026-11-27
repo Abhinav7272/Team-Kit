@@ -13,65 +13,19 @@
   <section class="hero">
     <div class="hero-text">
       <h1>Pick your team kit colours</h1>
-      <p>Captains: choose the top, bottom and shoe shades, add your team and your name, then save. Every team’s pick shows up in the table below.</p>
+      <p>Captains: pick one colour for the shirt and pants, add your team and your name, then save. Shoes stay black. Every team’s pick shows up in the table below.</p>
     </div>
 
-    <svg class="hero-art" viewBox="0 0 520 380" role="img" aria-label="Pinboard with bunting, a pennant and a team jersey">
-      <defs>
-        <pattern id="board-grid" width="65" height="65" patternUnits="userSpaceOnUse" x="10" y="10">
-          <path d="M65 0V65M0 65H65" fill="none" stroke="#F0503C" stroke-width="1.4" />
-        </pattern>
-      </defs>
-
-      <rect x="10" y="10" width="500" height="300" rx="16" fill="url(#board-grid)" stroke="#F0503C" stroke-width="2" />
-
-      <!-- pinned heart note -->
-      <g transform="rotate(-6 52 52)">
-        <rect x="26" y="28" width="52" height="46" fill="#F0503C" />
-        <path d="M52 64 l-12-11 a7 7 0 0 1 12-8 a7 7 0 0 1 12 8 Z" fill="#FFE6DA" />
-        <rect x="40" y="22" width="24" height="10" fill="#FFE6DA" opacity="0.85" transform="rotate(-12 52 27)" />
-      </g>
-
-      <!-- pennant -->
-      <path d="M160 52 L200 22 L240 52" fill="none" stroke="#F0503C" stroke-width="1.6" />
-      <rect x="146" y="50" width="108" height="7" rx="2" fill="#C9301F" />
-      <path d="M152 56 H248 V170 L200 146 L152 170 Z" fill="#FFF1EA" />
-      <text x="200" y="88" text-anchor="middle" class="pennant-text">Pick.</text>
-      <text x="200" y="114" text-anchor="middle" class="pennant-text">Save.</text>
-      <text x="200" y="140" text-anchor="middle" class="pennant-text">Play.</text>
-
-      <!-- bunting -->
-      <path d="M300 18 Q 410 110 520 72" fill="none" stroke="#FFF1EA" stroke-width="2" />
-      <path d="M318 32 L362 54 L334 74 L330 60 Z" fill="#F0503C" />
-      <path d="M380 64 L420 78 L396 108 L390 88 Z" fill="#C9301F" />
-      <path d="M440 82 L482 80 L468 116 L456 96 Z" fill="#F0503C" />
-
-      <!-- checklist note -->
-      <g transform="rotate(4 400 170)">
-        <rect x="372" y="146" width="56" height="50" fill="#FFF1EA" />
-        <rect x="394" y="138" width="10" height="16" fill="#C9301F" />
-        <g stroke="#F0503C" stroke-width="2.4" stroke-linecap="round">
-          <path d="M380 164 l5 5 M385 164 l-5 5" />
-          <path d="M380 176 l5 5 M385 176 l-5 5" />
-          <path d="M392 166.5 H418 M392 178.5 H418 M392 190 H412" />
-        </g>
-      </g>
-
-      <!-- jersey on hanger -->
-      <path d="M260 196 v-10 a8 8 0 1 1 8 -8" fill="none" stroke="#C9301F" stroke-width="2.4" stroke-linecap="round" />
-      <path d="M220 214 L260 196 L300 214" fill="none" stroke="#C9301F" stroke-width="2.4" stroke-linejoin="round" />
-      <path d="M232 208 L216 214 L196 246 L216 256 L226 240 L226 300 L294 300 L294 240 L304 256 L324 246 L304 214 L288 208 Q260 226 232 208 Z" fill="#F0503C" />
-      <text x="260" y="276" text-anchor="middle" class="jersey-num">10</text>
-
-      <!-- clock pill -->
-      <rect x="400" y="236" width="96" height="40" rx="20" fill="#E2311D" />
-      <text x="448" y="263" text-anchor="middle" class="clock-text">32 shades</text>
-      <rect x="398" y="282" width="100" height="5" rx="2.5" fill="#C9301F" />
-
-      <!-- desk -->
-      <rect x="0" y="318" width="520" height="16" rx="8" fill="#F0503C" />
-      <path d="M70 334 L58 380 M450 334 L462 380" stroke="#F0503C" stroke-width="4" stroke-linecap="round" />
-    </svg>
+    <div class="hero-shade">
+      <span class="label">Choose your shade</span>
+      <div class="wheel-wrap">
+        <svg class="shade-wheel" id="shade-wheel" viewBox="0 0 240 240" role="listbox" aria-label="Colour shades 1 to 32"></svg>
+        <div class="wheel-center" aria-live="polite">
+          <span class="shade-num" id="shade-num">1</span>
+          <span class="shade-name" id="shade-name">Snow</span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <main class="page">
@@ -86,34 +40,12 @@
         <div class="stage">
           <div class="stage-figure">
             <canvas id="kit-canvas" aria-label="Kit preview"></canvas>
-            <div class="piece-tabs" role="group" aria-label="Choose piece to colour">
-              <button type="button" class="piece-btn is-active" data-piece="top">
-                <span class="piece-dot" data-dot="top"></span>Top
-              </button>
-              <button type="button" class="piece-btn" data-piece="bottom">
-                <span class="piece-dot" data-dot="bottom"></span>Bottom
-              </button>
-              <button type="button" class="piece-btn" data-piece="shoes">
-                <span class="piece-dot" data-dot="shoes"></span>Shoes
-              </button>
-            </div>
           </div>
         </div>
 
         <form class="builder-form" id="kit-form" novalidate>
           <div class="field-group">
-            <span class="label">1 · Tap a piece, then choose your shade</span>
-            <div class="wheel-wrap">
-              <svg class="shade-wheel" id="shade-wheel" viewBox="0 0 240 240" role="listbox" aria-label="Colour shades 1 to 32"></svg>
-              <div class="wheel-center" aria-live="polite">
-                <span class="shade-num" id="shade-num">1</span>
-                <span class="shade-name" id="shade-name">Snow</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="field-group">
-            <span class="label">2 · Your details</span>
+            <span class="label">Your details</span>
             <label class="field">
               <span>Team name</span>
               <input id="team-name" name="team" type="text" maxlength="40" placeholder="e.g. Shakti Strikers" autocomplete="off" required />
@@ -137,7 +69,7 @@
     <!-- BLOCK 2: saved teams -->
     <section class="card teams" aria-labelledby="teams-title">
       <div class="card-head">
-        <h2 id="teams-title">Team selections</h2>
+        <h2 id="teams-title">Team dress-code selection</h2>
         <span class="count" id="team-count">0 teams</span>
       </div>
 
@@ -148,9 +80,7 @@
               <th scope="col">#</th>
               <th scope="col">Team</th>
               <th scope="col">Captain</th>
-              <th scope="col">Top</th>
-              <th scope="col">Bottom</th>
-              <th scope="col">Shoes</th>
+              <th scope="col">Team color</th>
               <th scope="col">Updated</th>
               <th scope="col"><span class="sr-only">Actions</span></th>
             </tr>

@@ -34,17 +34,22 @@
     { id: 32, name: "Bronze", hex: "#B45309" },
   ];
   const SHADE_BY_ID = new Map(SHADES.map((s) => [s.id, s]));
-  const PIECES = [
-    ["top", "Top"],
-    ["bottom", "Bottom"],
-    ["shoes", "Shoes"],
-  ];
-  const DEFAULT_COLORS = { top: 21, bottom: 5, shoes: 3 };
+  const SHOE_SHADE = 3; // Ink — shoes never change
+  const DEFAULT_COLOR = 21;
   const REFRESH_MS = 20000;
 
+  // One chosen shade covers the shirt and the pants. Shoes stay black.
+  function kitColors(shadeId) {
+    return { top: shadeId, bottom: shadeId, shoes: SHOE_SHADE };
+  }
+
+  function teamColorId(team) {
+    const id = team.colors && team.colors.top;
+    return SHADE_BY_ID.has(id) ? id : DEFAULT_COLOR;
+  }
+
   const state = {
-    activePiece: "top",
-    colors: { ...DEFAULT_COLORS },
+    color: DEFAULT_COLOR,
     editingId: null,
     teams: [],
     previewId: null,
@@ -168,7 +173,7 @@
     const data = out.data;
 
     const targets = {};
-    for (const [piece] of PIECES) {
+    for (const piece of ["top", "bottom", "shoes"]) {
       const { r, g, b } = hexToRgb(SHADE_BY_ID.get(colors[piece]).hex);
       targets[piece] = rgbToHsl(r, g, b);
     }
@@ -245,27 +250,18 @@
   }
 
   function syncWheel() {
-    const shade = SHADE_BY_ID.get(state.colors[state.activePiece]);
+    const shade = SHADE_BY_ID.get(state.color);
     $("#shade-num").textContent = shade.id;
     $("#shade-name").textContent = shade.name;
     $$(".shade-wheel .seg").forEach((el) => {
       el.classList.toggle("is-active", Number(el.dataset.shadeId) === shade.id);
     });
-    for (const [piece] of PIECES) {
-      $(`[data-dot="${piece}"]`).style.background = SHADE_BY_ID.get(state.colors[piece]).hex;
-    }
   }
 
   function pickShade(id) {
-    state.colors[state.activePiece] = id;
+    state.color = id;
     syncWheel();
-    renderKit($("#kit-canvas"), state.colors);
-  }
-
-  function selectPiece(piece) {
-    state.activePiece = piece;
-    $$(".piece-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.piece === piece));
-    syncWheel();
+    renderKit($("#kit-canvas"), kitColors(state.color));
   }
 
   /* ---------- API ---------- */
@@ -344,7 +340,7 @@
           cell(String(i + 1), "muted-cell num-cell"),
           cell(team.team, "team-cell"),
           cell(team.captain, "", "Captain"),
-          ...PIECES.map(([piece, label]) => cell(swatchEl(team.colors[piece]), "", label)),
+          cell(swatchEl(teamColorId(team)), "", "Team color"),
           cell(formatTime(team.updatedAt), "muted-cell", "Updated"),
           cell(actions, "actions-cell")
         );
@@ -363,30 +359,30 @@
 
   function resetBuilder() {
     state.editingId = null;
-    state.colors = { ...DEFAULT_COLORS };
+    state.color = DEFAULT_COLOR;
     $("#kit-form").reset();
     $$(".field input").forEach((el) => el.classList.remove("is-invalid"));
     $("#save-btn").textContent = "Save team";
     $("#cancel-edit").hidden = true;
     $("#edit-badge").hidden = true;
     setFormMessage("");
-    selectPiece("top");
-    renderKit($("#kit-canvas"), state.colors);
+    syncWheel();
+    renderKit($("#kit-canvas"), kitColors(state.color));
   }
 
   function startEdit(id) {
     const team = state.teams.find((t) => t.id === id);
     if (!team) return;
     state.editingId = id;
-    state.colors = { ...team.colors };
+    state.color = teamColorId(team);
     $("#team-name").value = team.team;
     $("#captain-name").value = team.captain;
     $("#save-btn").textContent = "Update team";
     $("#cancel-edit").hidden = false;
     $("#edit-badge").hidden = false;
     setFormMessage("");
-    selectPiece("top");
-    renderKit($("#kit-canvas"), state.colors);
+    syncWheel();
+    renderKit($("#kit-canvas"), kitColors(state.color));
     $(".builder").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -407,7 +403,7 @@
     const saveBtn = $("#save-btn");
     saveBtn.disabled = true;
     setFormMessage("");
-    const payload = { team, captain, colors: { ...state.colors } };
+    const payload = { team, captain, colors: kitColors(state.color) };
     try {
       const wasEditing = Boolean(state.editingId);
       if (wasEditing) await api("PUT", `/api/teams/${state.editingId}`, payload);
@@ -430,21 +426,18 @@
     const team = state.teams.find((t) => t.id === id);
     if (!team) return;
     state.previewId = id;
-    renderKit($("#modal-canvas"), team.colors);
+    const colorId = teamColorId(team);
+    renderKit($("#modal-canvas"), kitColors(colorId));
     $("#modal-team").textContent = team.team;
     $("#modal-captain").textContent = team.captain;
     $("#modal-updated").textContent = `Last updated ${formatTime(team.updatedAt)}`;
-    $("#modal-colors").replaceChildren(
-      ...PIECES.map(([piece, label]) => {
-        const row = document.createElement("div");
-        const dt = document.createElement("dt");
-        dt.textContent = label;
-        const dd = document.createElement("dd");
-        dd.append(swatchEl(team.colors[piece]));
-        row.append(dt, dd);
-        return row;
-      })
-    );
+    const row = document.createElement("div");
+    const dt = document.createElement("dt");
+    dt.textContent = "Team color";
+    const dd = document.createElement("dd");
+    dd.append(swatchEl(colorId));
+    row.append(dt, dd);
+    $("#modal-colors").replaceChildren(row);
     hideConfirm();
     modal.showModal();
   }
@@ -498,7 +491,6 @@
   /* ---------- Wire up ---------- */
 
   function bindUI() {
-    $$(".piece-btn").forEach((btn) => btn.addEventListener("click", () => selectPiece(btn.dataset.piece)));
     $("#kit-form").addEventListener("submit", handleSave);
     $("#cancel-edit").addEventListener("click", resetBuilder);
     $$(".field input").forEach((el) =>
@@ -529,7 +521,7 @@
   bindUI();
   syncWheel();
   loadBase()
-    .then(() => renderKit($("#kit-canvas"), state.colors))
+    .then(() => renderKit($("#kit-canvas"), kitColors(state.color)))
     .catch(() => setFormMessage("Could not load the kit image."));
   refreshTeams();
 })();
