@@ -12,11 +12,11 @@
 <body>
   <section class="hero">
     <div class="hero-text">
-      <h1>Pick your team kit colours</h1>
+      <h1>Pick your team dress code</h1>
       <p>Captains: pick one colour for the shirt and pants, add your team and your name, then save. Shoes stay black. Every team’s pick shows up in the table below.</p>
     </div>
 
-    <div class="hero-shade">
+    <form class="hero-shade" id="kit-form" novalidate>
       <span class="label">Choose your shade</span>
       <div class="wheel-wrap">
         <svg class="shade-wheel" id="shade-wheel" viewBox="0 0 240 240" role="listbox" aria-label="Colour shades 1 to 32"></svg>
@@ -25,7 +25,23 @@
           <span class="shade-name" id="shade-name">Snow</span>
         </div>
       </div>
-    </div>
+
+      <label class="field">
+        <span>Team name</span>
+        <input id="team-name" name="team" type="text" maxlength="40" placeholder="e.g. Shakti Strikers" autocomplete="off" required />
+      </label>
+      <label class="field">
+        <span>Captain name</span>
+        <input id="captain-name" name="captain" type="text" maxlength="40" placeholder="e.g. Meera Sharma" autocomplete="name" required />
+      </label>
+
+      <p class="form-msg" id="form-msg" role="status"></p>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="save-btn">Save team</button>
+        <button type="button" class="btn btn-ghost" id="cancel-edit" hidden>Cancel edit</button>
+      </div>
+      <span class="edit-badge" id="edit-badge" hidden>Editing a saved team</span>
+    </form>
   </section>
 
   <main class="page">
@@ -33,36 +49,12 @@
     <section class="card builder" aria-labelledby="builder-title">
       <div class="card-head">
         <h2 id="builder-title">Build your kit</h2>
-        <span class="edit-badge" id="edit-badge" hidden>Editing a saved team</span>
       </div>
 
-      <div class="builder-grid">
-        <div class="stage">
-          <div class="stage-figure">
-            <canvas id="kit-canvas" aria-label="Kit preview"></canvas>
-          </div>
+      <div class="stage">
+        <div class="stage-figure">
+          <canvas id="kit-canvas" aria-label="Kit preview"></canvas>
         </div>
-
-        <form class="builder-form" id="kit-form" novalidate>
-          <div class="field-group">
-            <span class="label">Your details</span>
-            <label class="field">
-              <span>Team name</span>
-              <input id="team-name" name="team" type="text" maxlength="40" placeholder="e.g. Shakti Strikers" autocomplete="off" required />
-            </label>
-            <label class="field">
-              <span>Captain name</span>
-              <input id="captain-name" name="captain" type="text" maxlength="40" placeholder="e.g. Meera Sharma" autocomplete="name" required />
-            </label>
-          </div>
-
-          <p class="form-msg" id="form-msg" role="status"></p>
-
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary" id="save-btn">Save team</button>
-            <button type="button" class="btn btn-ghost" id="cancel-edit" hidden>Cancel edit</button>
-          </div>
-        </form>
       </div>
     </section>
 

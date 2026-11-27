@@ -383,7 +383,7 @@
     setFormMessage("");
     syncWheel();
     renderKit($("#kit-canvas"), kitColors(state.color));
-    $(".builder").scrollIntoView({ behavior: "smooth", block: "start" });
+    $("#kit-form").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   async function handleSave(event) {
