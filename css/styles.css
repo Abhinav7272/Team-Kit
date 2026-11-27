@@ -598,16 +598,20 @@ input {
   color: var(--muted);
 }
 
-.closed-label {
+.status-label {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1.5px solid var(--line);
+  font-size: 0.6rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-label.closed {
   color: var(--muted);
-  font-size: 0.64rem;
-  font-weight: 700;
+}
+
+.status-label.open {
+  color: var(--accent);
 }
 
 .confirm {

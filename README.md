@@ -5,7 +5,7 @@ Single-page site where team captains pick dress code colours from a 32-shade whe
 ## Selection Rules
 
 - Each team must select one colour from the 32 options.
-- Edit window is open for 60 minutes. After that, it will get closed and nothing can be deleted or changed.
+- The edit window will remain open for 60 minutes. Once this period expires, the window will close, and no further changes or deletions will be allowed.
 
 ## Deploy on Vercel
 

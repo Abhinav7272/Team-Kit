@@ -312,11 +312,16 @@
         actions.append(actionButton("Preview", "btn-primary", () => openPreview(team.id)));
         if (isClosed(team)) {
           const closed = document.createElement("span");
-          closed.className = "closed-label";
-          closed.textContent = "Closed";
+          closed.className = "status-label closed";
+          closed.textContent = "Window closed";
           actions.append(closed);
         } else {
           actions.append(actionButton("Edit", "btn-ghost", () => startEdit(team.id)));
+          const timer = document.createElement("span");
+          timer.className = "status-label open";
+          const mins = Math.ceil((closesAt(team) - Date.now()) / 60000);
+          timer.textContent = mins <= 1 ? "<1 min to edit" : `${mins} min to edit`;
+          actions.append(timer);
         }
         tr.append(
           cell(String(i + 1), "muted-cell num-cell"),
