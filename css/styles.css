@@ -1,6 +1,5 @@
 :root {
-  --peach: #ffab85;
-  --peach-deep: #fb9a71;
+  --page: #e8e6e3;
   --surface: #ffd9c7;
   --surface-2: #ffe6da;
   --field: #fff1ea;
@@ -29,10 +28,10 @@ body {
   min-height: 100vh;
   font-family: var(--font);
   color: var(--ink);
-  background-color: var(--peach);
+  background-color: var(--page);
   background-image:
-    linear-gradient(rgba(240, 80, 60, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(240, 80, 60, 0.12) 1px, transparent 1px);
+    linear-gradient(rgba(70, 66, 62, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(70, 66, 62, 0.08) 1px, transparent 1px);
   background-size: 48px 48px;
   overflow-x: hidden;
 }
