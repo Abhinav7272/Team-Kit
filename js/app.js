@@ -311,17 +311,17 @@
         actions.className = "row-actions";
         actions.append(actionButton("Preview", "btn-primary", () => openPreview(team.id)));
         if (isClosed(team)) {
-          const closed = document.createElement("span");
-          closed.className = "status-label closed";
-          closed.textContent = "Window closed";
-          actions.append(closed);
+          const status = document.createElement("div");
+          status.className = "status-label closed";
+          status.textContent = "Window closed";
+          actions.append(status);
         } else {
           actions.append(actionButton("Edit", "btn-ghost", () => startEdit(team.id)));
-          const timer = document.createElement("span");
-          timer.className = "status-label open";
+          const status = document.createElement("div");
+          status.className = "status-label open";
           const mins = Math.ceil((closesAt(team) - Date.now()) / 60000);
-          timer.textContent = mins <= 1 ? "<1 min to edit" : `${mins} min to edit`;
-          actions.append(timer);
+          status.textContent = mins <= 1 ? "<1 min to edit" : `${mins} min to edit`;
+          actions.append(status);
         }
         tr.append(
           cell(String(i + 1), "muted-cell num-cell"),
