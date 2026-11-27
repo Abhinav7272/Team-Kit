@@ -309,13 +309,15 @@
         const tr = document.createElement("tr");
         const actions = document.createElement("div");
         actions.className = "row-actions";
-        actions.append(actionButton("Preview", "btn-primary", () => openPreview(team.id)));
         if (isClosed(team)) {
+          actions.className = "row-actions centered";
+          actions.append(actionButton("Preview", "btn-primary", () => openPreview(team.id)));
           const status = document.createElement("div");
           status.className = "status-label closed";
           status.textContent = "Window closed";
           actions.append(status);
         } else {
+          actions.append(actionButton("Preview", "btn-primary", () => openPreview(team.id)));
           actions.append(actionButton("Edit", "btn-ghost", () => startEdit(team.id)));
           const status = document.createElement("div");
           status.className = "status-label open";

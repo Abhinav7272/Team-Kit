@@ -493,6 +493,10 @@ input {
   gap: 6px;
 }
 
+.row-actions.centered {
+  justify-content: center;
+}
+
 .empty {
   text-align: center;
   color: var(--muted);
