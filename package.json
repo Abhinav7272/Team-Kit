@@ -1,0 +1,11 @@
+{
+  "name": "team-kit",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@vercel/blob": "^1.1.1"
+  }
+}
