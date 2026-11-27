@@ -5,7 +5,7 @@ Single-page site where team captains pick kit colours (top, bottom, shoes) from 
 ## Deploy on Vercel
 
 1. Import this repo into Vercel (no build settings needed).
-2. In the Vercel project, open **Storage → Create → Blob**, and connect the store to this project. This adds the `BLOB_READ_WRITE_TOKEN` environment variable.
+2. In the Vercel project, open **Storage → Create → Blob**. Choose **Private** access, keep the read-write token checkbox ticked, and connect the store to this project. This adds `BLOB_READ_WRITE_TOKEN` and `BLOB_STORE_ID`.
 3. Redeploy. Teams are saved through `api/teams.js` and `api/teams/[id].js` into Vercel Blob.
 
 ## Run locally
