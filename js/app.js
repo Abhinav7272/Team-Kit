@@ -37,6 +37,8 @@
   const SHOE_SHADE = 3; // Ink — shoes never change
   const DEFAULT_COLOR = 21;
   const REFRESH_MS = 20000;
+  const LOCK_MS = 60 * 60 * 1000;
+  const CLOSED_MSG = "This colour is closed. It can only be changed or deleted within 60 minutes of saving.";
 
   // One chosen shade covers the shirt and the pants. Shoes stay black.
   function kitColors(shadeId) {
@@ -69,74 +71,55 @@
     };
   }
 
-  function rgbToHsl(r, g, b) {
-    r /= 255;
-    g /= 255;
-    b /= 255;
+  /* ---------- Cricketer: white kit is recolored, skin and the bat stay ---------- */
+
+  function saturation(r, g, b) {
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
-    const l = (max + min) / 2;
-    if (max === min) return { h: 0, s: 0, l };
-    const d = max - min;
-    const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    let h;
-    if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
-    else if (max === g) h = (b - r) / d + 2;
-    else h = (r - g) / d + 4;
-    return { h: h * 60, s, l };
+    return max === 0 ? 0 : (max - min) / max;
   }
 
-  function hslToRgb(h, s, l) {
-    if (s === 0) {
-      const v = Math.round(l * 255);
-      return { r: v, g: v, b: v };
-    }
-    const hue2rgb = (p, q, t) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p + (q - p) * 6 * t;
-      if (t < 1 / 2) return q;
-      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-      return p;
-    };
-    const hn = h / 360;
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-    const p = 2 * l - q;
+  // Face, arms, hands, and the wooden bat are warm. White cloth is not.
+  function isWarmSkin(r, g, b) {
+    return r - b > 42 && r > g + 15 && saturation(r, g, b) > 0.16 && g > 50 && b > 30;
+  }
+
+  function isKitFabric(r, g, b) {
+    return saturation(r, g, b) < 0.32 && Math.max(r, g, b) > 90;
+  }
+
+  function shadeOf(r, g, b) {
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  }
+
+  function paint(r, g, b, target) {
+    const shade = shadeOf(r, g, b);
     return {
-      r: Math.round(hue2rgb(p, q, hn + 1 / 3) * 255),
-      g: Math.round(hue2rgb(p, q, hn) * 255),
-      b: Math.round(hue2rgb(p, q, hn - 1 / 3) * 255),
+      r: Math.min(255, Math.round(target.r * shade)),
+      g: Math.min(255, Math.round(target.g * shade)),
+      b: Math.min(255, Math.round(target.b * shade)),
     };
   }
 
-  /* ---------- Mannequin pixel classes (red polo, navy pants, black/purple shoes) ---------- */
-
-  // Main fabric lightness per piece; shading is kept relative to it.
-  const BASE_LIGHTNESS = { top: 0.49, bottom: 0.22, shoes: 0.12 };
-
-  function isSkin(r, g, b) {
-    return r > 200 && g > 140 && b > 100 && r > g && g > b && r - b > 40 && g - b < 80;
+  function paintBlack(r, g, b) {
+    const v = Math.round(12 + shadeOf(r, g, b) * 42);
+    return { r: v, g: v, b: v };
   }
 
-  function isRedGarment(r, g, b) {
-    return r > 140 && g < 90 && b < 90 && r > g + 60 && r > b + 60;
+  function closesAt(team) {
+    return Number(team.createdAt) + LOCK_MS;
   }
 
-  function isNavyPants(r, g, b) {
-    return b > r + 12 && r < 70 && g < 100 && b > 45 && b < 140 && g >= r;
+  function isClosed(team, now = Date.now()) {
+    return !Number.isFinite(Number(team.createdAt)) || now >= closesAt(team);
   }
 
-  function isShoePixel(r, g, b) {
-    const black = r < 55 && g < 55 && b < 60 && Math.abs(r - g) < 18 && Math.abs(g - b) < 22;
-    const purple = b > 90 && r > 70 && b > g + 25 && b >= r - 10 && g < 190;
-    return black || purple;
-  }
-
-  function tint(r, g, b, piece, target) {
-    const { l } = rgbToHsl(r, g, b);
-    const delta = (l - BASE_LIGHTNESS[piece]) * 0.6;
-    const outL = Math.min(0.97, Math.max(0.04, target.l + delta));
-    return hslToRgb(target.h, target.s, outL);
+  function lockText(team, now = Date.now()) {
+    const left = closesAt(team) - now;
+    if (!Number.isFinite(left) || left <= 0) return CLOSED_MSG;
+    const mins = Math.ceil(left / 60000);
+    if (mins <= 1) return "Open for less than a minute. Then it closes and cannot be changed or deleted.";
+    return `Open for ${mins} more minutes. Then it closes and cannot be changed or deleted.`;
   }
 
   /* ---------- Kit renderer ---------- */
@@ -160,7 +143,7 @@
         resolve();
       };
       img.onerror = reject;
-      img.src = "assets/woman-kit.png";
+      img.src = "assets/cricketer.png";
     });
   }
 
@@ -172,12 +155,8 @@
     const out = new ImageData(new Uint8ClampedArray(pixels), width, height);
     const data = out.data;
 
-    const targets = {};
-    for (const piece of ["top", "bottom", "shoes"]) {
-      const { r, g, b } = hexToRgb(SHADE_BY_ID.get(colors[piece]).hex);
-      targets[piece] = rgbToHsl(r, g, b);
-    }
-    const shoeLine = height * 0.84;
+    const kit = hexToRgb(SHADE_BY_ID.get(colors.top).hex);
+    const shoeLine = height * 0.948;
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -186,18 +165,15 @@
         const r = data[i];
         const g = data[i + 1];
         const b = data[i + 2];
-        if ((r > 246 && g > 246 && b > 246) || isSkin(r, g, b)) continue;
+        if (isWarmSkin(r, g, b)) continue;
 
-        let piece = null;
-        if (y > shoeLine && isShoePixel(r, g, b)) piece = "shoes";
-        else if (isRedGarment(r, g, b)) piece = "top";
-        else if (isNavyPants(r, g, b)) piece = "bottom";
-        if (!piece) continue;
-
-        const t = tint(r, g, b, piece, targets[piece]);
-        data[i] = t.r;
-        data[i + 1] = t.g;
-        data[i + 2] = t.b;
+        let next = null;
+        if (y >= shoeLine && isKitFabric(r, g, b)) next = paintBlack(r, g, b);
+        else if (isKitFabric(r, g, b)) next = paint(r, g, b, kit);
+        if (!next) continue;
+        data[i] = next.r;
+        data[i + 1] = next.g;
+        data[i + 2] = next.b;
       }
     }
     canvas.getContext("2d").putImageData(out, 0, 0);
@@ -280,10 +256,20 @@
   async function refreshTeams() {
     try {
       state.teams = await api("GET", "/api/teams");
+      closeExpiredEdit();
       renderTable();
+      syncPreviewLock();
     } catch {
       // keep showing the last good list
     }
+  }
+
+  function closeExpiredEdit() {
+    if (!state.editingId) return;
+    const editing = state.teams.find((t) => t.id === state.editingId);
+    if (editing && !isClosed(editing)) return;
+    resetBuilder();
+    showToast(CLOSED_MSG);
   }
 
   /* ---------- Table ---------- */
@@ -296,15 +282,6 @@
     dot.style.background = shade.hex;
     span.append(dot, `${shade.id} · ${shade.name}`);
     return span;
-  }
-
-  function formatTime(ms) {
-    return new Date(ms).toLocaleString(undefined, {
-      day: "numeric",
-      month: "short",
-      hour: "numeric",
-      minute: "2-digit",
-    });
   }
 
   function cell(content, className, label) {
@@ -332,10 +309,15 @@
         const tr = document.createElement("tr");
         const actions = document.createElement("div");
         actions.className = "row-actions";
-        actions.append(
-          actionButton("Preview", "btn-primary", () => openPreview(team.id)),
-          actionButton("Edit", "btn-ghost", () => startEdit(team.id))
-        );
+        actions.append(actionButton("Preview", "btn-primary", () => openPreview(team.id)));
+        if (isClosed(team)) {
+          const closed = document.createElement("span");
+          closed.className = "closed-label";
+          closed.textContent = "Closed";
+          actions.append(closed);
+        } else {
+          actions.append(actionButton("Edit", "btn-ghost", () => startEdit(team.id)));
+        }
         tr.append(
           cell(String(i + 1), "muted-cell num-cell"),
           cell(team.team, "team-cell"),
@@ -372,6 +354,10 @@
   function startEdit(id) {
     const team = state.teams.find((t) => t.id === id);
     if (!team) return;
+    if (isClosed(team)) {
+      showToast(CLOSED_MSG);
+      return;
+    }
     state.editingId = id;
     state.color = teamColorId(team);
     $("#team-name").value = team.team;
@@ -397,6 +383,15 @@
       setFormMessage("Please enter both the team name and the captain name.");
       (team ? captainInput : teamInput).focus();
       return;
+    }
+
+    if (state.editingId) {
+      const editing = state.teams.find((t) => t.id === state.editingId);
+      if (editing && isClosed(editing)) {
+        resetBuilder();
+        setFormMessage(CLOSED_MSG);
+        return;
+      }
     }
 
     const saveBtn = $("#save-btn");
@@ -429,7 +424,6 @@
     renderKit($("#modal-canvas"), kitColors(colorId));
     $("#modal-team").textContent = team.team;
     $("#modal-captain").textContent = team.captain;
-    $("#modal-updated").textContent = `Last updated ${formatTime(team.updatedAt)}`;
     const row = document.createElement("div");
     const dt = document.createElement("dt");
     dt.textContent = "Team color";
@@ -439,10 +433,23 @@
     $("#modal-colors").replaceChildren(row);
     hideConfirm();
     modal.showModal();
+    syncPreviewLock();
   }
 
   function closePreview() {
     modal.close();
+  }
+
+  function syncPreviewLock() {
+    if (!modal.open || !state.previewId) return;
+    const team = state.teams.find((t) => t.id === state.previewId);
+    if (!team) return;
+    const closed = isClosed(team);
+    $("#modal-lock").textContent = lockText(team);
+    $("#modal-edit").hidden = closed;
+    $("#modal-delete").hidden = closed;
+    $("#modal-actions").hidden = closed;
+    if (closed) hideConfirm();
   }
 
   function showConfirm() {
@@ -513,6 +520,11 @@
     $("#confirm-delete").addEventListener("click", confirmDelete);
 
     setInterval(refreshTeams, REFRESH_MS);
+    setInterval(() => {
+      closeExpiredEdit();
+      renderTable();
+      syncPreviewLock();
+    }, 15000);
     window.addEventListener("focus", refreshTeams);
   }
 

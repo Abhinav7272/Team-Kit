@@ -1,6 +1,11 @@
-# Team-Kit
+# Prime Play
 
-Single-page site where team captains pick kit colours (top, bottom, shoes) from a 32-shade wheel, save their team and captain name, and see every team's selection in a shared table. Each saved team can be previewed in a popup, edited, or deleted (delete requires confirmation inside the preview).
+Single-page site where team captains pick dress code colours from a 32-shade wheel, save their team and captain name, and see every team's selection in a shared table. Each saved team can be previewed in a popup, edited, or deleted — but only within 60 minutes of saving. After that the colour is closed.
+
+## Selection Rules
+
+- Each team must select one colour from the 32 options.
+- You can change or delete a colour for 60 minutes only. After that it is closed.
 
 ## Deploy on Vercel
 

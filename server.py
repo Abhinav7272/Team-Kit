@@ -1,4 +1,4 @@
-"""Team Kit Studio server: serves the site and stores team kits in data/teams.json.
+"""Prime Play server: serves the site and stores team dress codes in data/teams.json.
 
 Run:  python3 server.py  (then open http://localhost:8765)
 """
@@ -19,6 +19,8 @@ PORT = int(os.environ.get("PORT", "8765"))
 SHADE_COUNT = 32
 PIECES = ("top", "bottom", "shoes")
 MAX_NAME = 40
+LOCK_MS = 60 * 60 * 1000
+CLOSED_ERROR = "This colour is closed. It can only be changed or deleted within 60 minutes of saving."
 
 lock = threading.Lock()
 
@@ -58,6 +60,15 @@ def clean_payload(body):
             return None, f"Pick a valid shade for {piece}."
         clean_colors[piece] = value
     return {"team": team, "captain": captain, "colors": clean_colors}, None
+
+
+def is_closed(record, now=None):
+    created = record.get("createdAt")
+    if not isinstance(created, (int, float)):
+        return True
+    if now is None:
+        now = int(time.time() * 1000)
+    return now - int(created) >= LOCK_MS
 
 
 def name_taken(teams, team, exclude_id=None):
@@ -132,6 +143,8 @@ class Handler(SimpleHTTPRequestHandler):
             record = next((t for t in teams if t["id"] == team_id), None)
             if not record:
                 return self._send_json(HTTPStatus.NOT_FOUND, {"error": "That team no longer exists."})
+            if is_closed(record):
+                return self._send_json(HTTPStatus.FORBIDDEN, {"error": CLOSED_ERROR})
             if name_taken(teams, fields["team"], exclude_id=team_id):
                 return self._send_json(
                     HTTPStatus.CONFLICT, {"error": f"Another team is already called “{fields['team']}”."}
@@ -146,13 +159,16 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_error(HTTPStatus.NOT_FOUND)
         with lock:
             teams = load_teams()
-            remaining = [t for t in teams if t["id"] != team_id]
-            if len(remaining) == len(teams):
+            record = next((t for t in teams if t["id"] == team_id), None)
+            if not record:
                 return self._send_json(HTTPStatus.NOT_FOUND, {"error": "That team no longer exists."})
+            if is_closed(record):
+                return self._send_json(HTTPStatus.FORBIDDEN, {"error": CLOSED_ERROR})
+            remaining = [t for t in teams if t["id"] != team_id]
             save_teams(remaining)
         return self._send_json(HTTPStatus.OK, {"ok": True})
 
 
 if __name__ == "__main__":
-    print(f"Team Kit Studio running at http://localhost:{PORT}")
+    print(f"Prime Play running at http://localhost:{PORT}")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
